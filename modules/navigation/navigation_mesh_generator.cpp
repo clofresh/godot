@@ -37,6 +37,7 @@
 #include "core/os/thread.h"
 #include "scene/3d/collision_shape.h"
 #include "scene/3d/mesh_instance.h"
+#include "scene/3d/multimesh_instance.h"
 #include "scene/3d/physics_body.h"
 #include "scene/resources/box_shape.h"
 #include "scene/resources/capsule_shape.h"
@@ -146,6 +147,21 @@ void EditorNavigationMeshGenerator::_parse_geometry(Transform p_accumulated_tran
 		Ref<Mesh> mesh = mesh_instance->get_mesh();
 		if (mesh.is_valid()) {
 			_add_mesh(mesh, p_accumulated_transform * mesh_instance->get_transform(), p_verticies, p_indices);
+		}
+	}
+
+	if (Object::cast_to<MultiMeshInstance>(p_node) && p_generate_from != NavigationMesh::PARSED_GEOMETRY_STATIC_COLLIDERS) {
+		MultiMeshInstance *multimesh_instance = Object::cast_to<MultiMeshInstance>(p_node);
+		Ref<MultiMesh> multimesh = multimesh_instance->get_multimesh();
+		Ref<Mesh> mesh = multimesh->get_mesh();
+		if (mesh.is_valid()) {
+			int n = multimesh->get_visible_instance_count();
+			if (n == -1) {
+				n = multimesh->get_instance_count();
+			}
+			for (int i = 0; i < n; i++) {
+				_add_mesh(mesh, p_accumulated_transform * multimesh->get_instance_transform(i), p_verticies, p_indices);
+			}
 		}
 	}
 
